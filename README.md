@@ -1,9 +1,5 @@
 # interactive_viewer_vector
 
-[![pub package](https://img.shields.io/pub/v/interactive_viewer_vector.svg)](https://pub.dev/packages/interactive_viewer_vector)
-[![pub points](https://img.shields.io/pub/points/interactive_viewer_vector.svg)](https://pub.dev/packages/interactive_viewer_vector)
-[![GitHub](https://img.shields.io/badge/repo-GitHub-181717?logo=github)](https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector)
-
 A fork of the Flutter SDK `InteractiveViewer` that updates the `RenderTransform` directly (`markNeedsPaint`) instead of calling `setState` on every pan/zoom frame — zero widget rebuilds during interactions.
 
 - **pub.dev:** https://pub.dev/packages/interactive_viewer_vector
