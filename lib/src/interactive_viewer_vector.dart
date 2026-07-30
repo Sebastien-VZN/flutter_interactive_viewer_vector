@@ -394,14 +394,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
   Axis? _currentAxis; // Used with panAxis.
   Offset? _referenceFocalPoint; // Point where the current gesture began.
   double? _scaleStart; // Scale value at start of scaling gesture.
-  double? _rotationStart = 0; // Rotation at start of rotation gesture.
-  double _currentRotation = 0; // Rotation of _transformationController.value.
   _GestureType? _gestureType;
-
-  // TODO(justinmc): Add rotateEnabled parameter to the widget and remove this
-  // hardcoded value when the rotation feature is implemented.
-  // https://github.com/flutter/flutter/issues/57698
-  final bool _rotateEnabled = false;
 
   // The _boundaryRect is calculated by adding the boundaryMargin to the size of
   // the child.
@@ -461,11 +454,12 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
       return nextMatrix;
     }
 
-    // Expand the boundaries with rotation. This prevents the problem where a
-    // mismatch in orientation between the viewport and boundaries effectively
-    // limits translation. With this approach, all points that are visible with
-    // no rotation are visible after rotation.
-    final boundariesAabbQuad = _getAxisAlignedBoundingBoxWithRotation(_boundaryRect, _currentRotation);
+    final boundariesAabbQuad = Quad.points(
+      Vector3(_boundaryRect.left, _boundaryRect.top, 0),
+      Vector3(_boundaryRect.right, _boundaryRect.top, 0),
+      Vector3(_boundaryRect.right, _boundaryRect.bottom, 0),
+      Vector3(_boundaryRect.left, _boundaryRect.bottom, 0),
+    );
 
     // If the given translation fits completely within the boundaries, allow it.
     final offendingDistance = _exceedsBy(boundariesAabbQuad, nextViewport);
@@ -481,11 +475,6 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
       nextTotalTranslation.dx - offendingDistance.dx * currentScale,
       nextTotalTranslation.dy - offendingDistance.dy * currentScale,
     );
-    // TODO(justinmc): This needs some work to handle rotation properly. The
-    // idea is that the boundaries are axis aligned (boundariesAabbQuad), but
-    // calculating the translation to put the viewport inside that Quad is more
-    // complicated than this when rotated.
-    // https://github.com/flutter/flutter/issues/57698
     final correctedMatrix = matrix.clone()
       ..setTranslation(Vector3(correctedTotalTranslation.dx, correctedTotalTranslation.dy, 0));
 
@@ -536,23 +525,9 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     return matrix.clone()..scaleByDouble(clampedScale, clampedScale, clampedScale, 1);
   }
 
-  // Return a new matrix representing the given matrix after applying the given
-  // rotation.
-  Matrix4 _matrixRotate(Matrix4 matrix, double rotation, Offset focalPoint) {
-    if (rotation == 0) {
-      return matrix.clone();
-    }
-    final focalPointScene = _transformer.toScene(focalPoint);
-    return matrix.clone()
-      ..translateByDouble(focalPointScene.dx, focalPointScene.dy, 0, 1)
-      ..rotateZ(-rotation)
-      ..translateByDouble(-focalPointScene.dx, -focalPointScene.dy, 0, 1);
-  }
-
   // Returns true iff the given _GestureType is enabled.
   bool _gestureIsSupported(_GestureType? gestureType) {
     return switch (gestureType) {
-      _GestureType.rotate => _rotateEnabled,
       _GestureType.scale => widget.scaleEnabled,
       _GestureType.pan || null => widget.panEnabled,
     };
@@ -564,11 +539,8 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
   // finger.
   _GestureType _getGestureType(ScaleUpdateDetails details) {
     final scale = !widget.scaleEnabled ? 1.0 : details.scale;
-    final rotation = !_rotateEnabled ? 0.0 : details.rotation;
-    if ((scale - 1).abs() > rotation.abs()) {
+    if (scale != 1.0) {
       return _GestureType.scale;
-    } else if (rotation != 0.0) {
-      return _GestureType.rotate;
     } else {
       return _GestureType.pan;
     }
@@ -598,7 +570,6 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     _currentAxis = null;
     _scaleStart = _transformer.value.getMaxScaleOnAxis();
     _referenceFocalPoint = _transformer.toScene(details.localFocalPoint);
-    _rotationStart = _currentRotation;
   }
 
   // Handle an update to an ongoing gesture. All of pan, scale, and rotate are
@@ -648,19 +619,6 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
           _referenceFocalPoint = focalPointSceneCheck;
         }
 
-      case _GestureType.rotate:
-        if (details.rotation == 0.0) {
-          widget.onInteractionUpdate?.call(details);
-          return;
-        }
-        final desiredRotation = _rotationStart! + details.rotation;
-        _transformer.value = _matrixRotate(
-          _transformer.value,
-          _currentRotation - desiredRotation,
-          details.localFocalPoint,
-        );
-        _currentRotation = desiredRotation;
-
       case _GestureType.pan:
         // details may have a change in scale here when scaleEnabled is false.
         // In an effort to keep the behavior similar whether or not scaleEnabled
@@ -684,7 +642,6 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
   Future<void> _onScaleEnd(ScaleEndDetails details) async {
     widget.onInteractionEnd?.call(details);
     _scaleStart = null;
-    _rotationStart = null;
     _referenceFocalPoint = null;
 
     _animation?.removeListener(_handleInertiaAnimation);
@@ -749,7 +706,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
         _scaleController.duration = Duration(milliseconds: (tFinal * 1000).round());
         _scaleAnimation!.addListener(_handleScaleAnimation);
         await _scaleController.forward();
-      case _GestureType.rotate || null:
+      case null:
         break;
     }
   }
@@ -1047,7 +1004,7 @@ class TransformationControllerVector extends ValueNotifier<Matrix4> {
 
 // A classification of relevant user gestures. Each contiguous user gesture is
 // represented by exactly one _GestureType.
-enum _GestureType { pan, scale, rotate }
+enum _GestureType { pan, scale }
 
 // Given a velocity and drag, calculate the time at which motion will come to
 // a stop, within the margin of effectivelyMotionless.
@@ -1073,22 +1030,6 @@ Quad _transformViewport(Matrix4 matrix, Rect viewport) {
     inverseMatrix.transform3(Vector3(viewport.bottomRight.dx, viewport.bottomRight.dy, 0)),
     inverseMatrix.transform3(Vector3(viewport.bottomLeft.dx, viewport.bottomLeft.dy, 0)),
   );
-}
-
-// Find the axis aligned bounding box for the rect rotated about its center by
-// the given amount.
-Quad _getAxisAlignedBoundingBoxWithRotation(Rect rect, double rotation) {
-  final rotationMatrix = Matrix4.identity()
-    ..translateByDouble(rect.size.width / 2, rect.size.height / 2, 0, 1)
-    ..rotateZ(rotation)
-    ..translateByDouble(-rect.size.width / 2, -rect.size.height / 2, 0, 1);
-  final boundariesRotated = Quad.points(
-    rotationMatrix.transform3(Vector3(rect.left, rect.top, 0)),
-    rotationMatrix.transform3(Vector3(rect.right, rect.top, 0)),
-    rotationMatrix.transform3(Vector3(rect.right, rect.bottom, 0)),
-    rotationMatrix.transform3(Vector3(rect.left, rect.bottom, 0)),
-  );
-  return InteractiveViewerVector.getAxisAlignedBoundingBox(boundariesRotated);
 }
 
 // Return the amount that viewport lies outside of boundary. If the viewport

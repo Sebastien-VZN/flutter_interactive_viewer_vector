@@ -1,25 +1,37 @@
 # interactive_viewer_vector
 
-A drop-in replacement for the Flutter SDK `InteractiveViewer` that updates the `RenderTransform` **directly** (`markNeedsPaint`) instead of calling `setState` on every pan/zoom frame.
+A fork of the Flutter SDK `InteractiveViewer` that updates the `RenderTransform` directly (`markNeedsPaint`) instead of calling `setState` on every pan/zoom frame — zero widget rebuilds during interactions.
 
-## Why?
+## The problem
 
-The stock `InteractiveViewer` subscribes to its `TransformationController` (a `ValueNotifier<Matrix4>`) and calls `setState(() {})` on every transformation change (see `interactive_viewer.dart` in the Flutter SDK). During a pan or pinch zoom, this rebuilds the **entire widget subtree** on every frame — including all `CustomPaint` widgets, `RepaintBoundary` children, etc.
+The stock `InteractiveViewer` subscribes to its `TransformationController` (a `ValueNotifier<Matrix4>`) and calls `setState(() {})` on every transformation change. During a pan or pinch zoom, this rebuilds the entire widget subtree on every frame — all `CustomPaint` widgets, `RepaintBoundary` children, and everything else in the subtree.
 
 On heavy canvases (mindmaps, editors, dashboards with hundreds of painted elements), this causes visible jank on mobile devices.
 
-`InteractiveViewerVector` keeps the exact same API and gesture behavior, but pushes matrix updates straight to the `RenderTransform`, which only schedules a repaint — **zero widget rebuilds during interactions**.
+This is a known, long-standing Flutter framework limitation (issues [#78543](https://github.com/flutter/flutter/issues/78543), [#72066](https://github.com/flutter/flutter/issues/72066), [#118434](https://github.com/flutter/flutter/issues/118434), [#129150](https://github.com/flutter/flutter/issues/129150), [#60550](https://github.com/flutter/flutter/issues/60550)). It has not been fixed upstream because the fix is architectural — the widget would need to be restructured to avoid setState.
+
+## The fix
+
+The fork replaces only the `_handleTransformation` method. Instead of calling `setState`, it pushes the new matrix directly to the `RenderTransform` via a `GlobalKey`. This triggers `markNeedsPaint()` only — the widget tree is never rebuilt during an interaction.
 
 ```
 Stock InteractiveViewer:   matrix change -> setState -> build() whole subtree -> layout/paint
 InteractiveViewerVector:   matrix change -> RenderTransform.transform = m   -> markNeedsPaint only
 ```
 
-This is a known, long-standing Flutter framework limitation (issues [#78543](https://github.com/flutter/flutter/issues/78543), [#72066](https://github.com/flutter/flutter/issues/72066), [#118434](https://github.com/flutter/flutter/issues/118434), [#129150](https://github.com/flutter/flutter/issues/129150), [#60550](https://github.com/flutter/flutter/issues/60550)) — never fixed upstream because it is architectural. This package is the fix as a fork.
+The API, gesture behavior, and constructor parameters are unchanged.
+
+## Real-world result
+
+Validated on an Oppo Find X2 with a complex mindmap canvas: 60fps stable during pan and zoom, matching Mindmeister's performance. The previous LOD (Level of Detail) mitigation that was used to hide jank was removed after this fork made it unnecessary.
+
+## Rotation code removal
+
+The stock SDK contains unfinished rotation gesture support: a hardcoded `_rotateEnabled = false`, a `_matrixRotate` method, rotation-aware boundary clamping, a `_GestureType.rotate` enum value, and two TODOs referencing [flutter/flutter#57698](https://github.com/flutter/flutter/issues/57698) (open since 2020). This was designed for geographic map use cases. It was never completed upstream and is irrelevant for this package's target use cases (mindmaps, canvases, image viewers). All of this dead code was removed from the fork to simplify the codebase.
 
 ## Platforms
 
-Native only — CanvasKit/HTML rendering on the web negates the benefit and suffers from its own performance characteristics:
+Native only — CanvasKit/HTML rendering on the web has its own performance characteristics and negates the benefit:
 
 - Android
 - iOS
@@ -53,19 +65,15 @@ _controller.value = Matrix4.identity();
 
 All constructor variants are supported: `InteractiveViewerVector(...)`, `InteractiveViewerVector.builder(...)`, `panEnabled`, `scaleEnabled`, `panAxis`, `trackpadScrollCausesScale`, `scaleFactor`, `alignment`, `clipBehavior`, etc.
 
-## Proving the difference
+## Tests
 
-The package widget tests assert that a child widget with a build counter is built **exactly once** across 10 consecutive transformation updates (pan and scale). With the stock widget, each update triggers a build.
-
-Run them:
+The package widget tests assert that a child widget with a build counter is built **exactly once** across 10 consecutive transformation updates (pan and scale). With the stock widget, each update triggers a build. This test is the proof that the fork works.
 
 ```bash
 flutter test
 ```
 
 The `example/` app displays a live "canvas builds" counter in its app bar: it stays flat while you pan/zoom.
-
-## Test
 
 ```bash
 flutter test                              # unit + widget tests
