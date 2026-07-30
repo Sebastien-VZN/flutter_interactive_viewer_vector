@@ -21,11 +21,7 @@ void main() {
     });
 
     test("getNearestPointOnLine clamps to the segment", () {
-      final closest = InteractiveViewerVector.getNearestPointOnLine(
-        Vector3(15, 0, 0),
-        Vector3(0, 0, 0),
-        Vector3(10, 0, 0),
-      );
+      final closest = InteractiveViewerVector.getNearestPointOnLine(Vector3(15, 0, 0), Vector3(0, 0, 0), Vector3(10, 0, 0));
       expect(closest.x, 10);
     });
 

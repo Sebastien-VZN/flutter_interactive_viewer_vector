@@ -52,11 +52,7 @@ void main() {
       await tester.pump();
     }
 
-    expect(
-      buildCount,
-      buildsAfterInitial,
-      reason: "the child must not be rebuilt during pan — only the RenderTransform repaints",
-    );
+    expect(buildCount, buildsAfterInitial, reason: "the child must not be rebuilt during pan — only the RenderTransform repaints");
   });
 
   testWidgets("scale does not rebuild the child widget tree", (tester) async {
