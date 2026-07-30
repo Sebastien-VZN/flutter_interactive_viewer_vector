@@ -1,0 +1,23 @@
+name: interactive_viewer_vector
+description: >-
+  Fork of the Flutter SDK InteractiveViewer that updates the RenderTransform
+  directly (markNeedsPaint) instead of calling setState on every pan/zoom
+  frame. No widget tree rebuild during pan/zoom interactions.
+version: 0.1.0
+repository: https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector
+
+environment:
+  sdk: ^3.12.2
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  vector_math: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
