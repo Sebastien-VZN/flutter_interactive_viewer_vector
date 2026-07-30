@@ -1,14 +1,25 @@
 # interactive_viewer_vector
 
+[![pub package](https://img.shields.io/pub/v/interactive_viewer_vector.svg)](https://pub.dev/packages/interactive_viewer_vector)
+[![pub points](https://img.shields.io/pub/points/interactive_viewer_vector.svg)](https://pub.dev/packages/interactive_viewer_vector)
+[![GitHub](https://img.shields.io/badge/repo-GitHub-181717?logo=github)](https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector)
+
 A fork of the Flutter SDK `InteractiveViewer` that updates the `RenderTransform` directly (`markNeedsPaint`) instead of calling `setState` on every pan/zoom frame — zero widget rebuilds during interactions.
+
+- **pub.dev:** https://pub.dev/packages/interactive_viewer_vector
+- **Repository:** https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector
 
 ## The problem
 
+When you pan or zoom a standard `InteractiveViewer`, Flutter rebuilds the **entire widget subtree inside it on every single frame** of the gesture. Every `CustomPaint`, every `RepaintBoundary`, every child widget — all of it is rebuilt and re-laid-out, dozens of times per second, for as long as your finger is on the screen.
+
+On a small widget this is invisible. On a heavy canvas — a mindmap with hundreds of nodes, an editor with a complex layer tree, a dashboard full of painted elements — this rebuild storm shows up as **visible jank and dropped frames on mobile devices**. The interaction feels laggy, and the bigger your canvas, the worse it gets.
+
+### Why this happens (technical)
+
 The stock `InteractiveViewer` subscribes to its `TransformationController` (a `ValueNotifier<Matrix4>`) and calls `setState(() {})` on every transformation change. During a pan or pinch zoom, this rebuilds the entire widget subtree on every frame — all `CustomPaint` widgets, `RepaintBoundary` children, and everything else in the subtree.
 
-On heavy canvases (mindmaps, editors, dashboards with hundreds of painted elements), this causes visible jank on mobile devices.
-
-This is a known, long-standing Flutter framework limitation (issues [#78543](https://github.com/flutter/flutter/issues/78543), [#72066](https://github.com/flutter/flutter/issues/72066), [#118434](https://github.com/flutter/flutter/issues/118434), [#129150](https://github.com/flutter/flutter/issues/129150), [#60550](https://github.com/flutter/flutter/issues/60550)). It has not been fixed upstream because the fix is architectural — the widget would need to be restructured to avoid setState.
+This is a known, long-standing Flutter framework limitation (issues [#78543](https://github.com/flutter/flutter/issues/78543), [#72066](https://github.com/flutter/flutter/issues/72066), [#118434](https://github.com/flutter/flutter/issues/118434), [#129150](https://github.com/flutter/flutter/issues/129150), [#60550](https://github.com/flutter/flutter/issues/60550)). It has not been fixed upstream because the fix is architectural — the widget would need to be restructured to avoid `setState`.
 
 ## The fix
 
@@ -79,6 +90,18 @@ The `example/` app displays a live "canvas builds" counter in its app bar: it st
 flutter test                              # unit + widget tests
 cd example && flutter test integration_test  # integration (device required)
 ```
+
+## Maintenance & contribution
+
+I'm not a full-time maintainer. I built this fork for my own project ([Axomind](https://github.com/Sebastien-VZN)), where it drives a heavy mindmap canvas, and I publish it in case it's useful to others working on similar interactive canvases.
+
+What that means in practice:
+
+- **Bug reports** — welcome. Open a [GitHub Issue](https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector/issues) with a repro and I'll look into it. Bugs that break the core pan/zoom behavior or regress the no-rebuild guarantee are the priority.
+- **Feature requests** — I'll consider them only when they're relevant to my own use case: mindmaps, canvases, and interactive content of that kind. If a requested feature fits that scope, I'm happy to discuss it.
+- **Out-of-scope features** — if you need behavior aimed at a different kind of app (geographic maps, document viewers, exotic gesture modes, etc.), the cleanest path is to fork the project. The codebase is small and the fork's single behavioral change is isolated, so adapting it to your needs should be straightforward.
+
+This isn't a polished open-source product with a roadmap and a team behind it — it's a focused fix that I use in production, shared publicly. Clear expectations on both sides keep it sustainable.
 
 ## Origin & license
 
