@@ -380,8 +380,7 @@ class InteractiveViewerVector extends StatefulWidget {
 }
 
 class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with TickerProviderStateMixin {
-  late TransformationControllerVector _transformer =
-      widget.transformationController ?? TransformationControllerVector();
+  late TransformationControllerVector _transformer = widget.transformationController ?? TransformationControllerVector();
 
   final GlobalKey _childKey = GlobalKey();
   final GlobalKey _parentKey = GlobalKey();
@@ -407,10 +406,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     // rotation and translation methods don't handle infinites well.
     assert(
       boundaryRect.isFinite ||
-          (boundaryRect.left.isInfinite &&
-              boundaryRect.top.isInfinite &&
-              boundaryRect.right.isInfinite &&
-              boundaryRect.bottom.isInfinite),
+          (boundaryRect.left.isInfinite && boundaryRect.top.isInfinite && boundaryRect.right.isInfinite && boundaryRect.bottom.isInfinite),
       "boundaryRect must either be infinite in all directions or finite in all directions.",
     );
     return boundaryRect;
@@ -475,8 +471,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
       nextTotalTranslation.dx - offendingDistance.dx * currentScale,
       nextTotalTranslation.dy - offendingDistance.dy * currentScale,
     );
-    final correctedMatrix = matrix.clone()
-      ..setTranslation(Vector3(correctedTotalTranslation.dx, correctedTotalTranslation.dy, 0));
+    final correctedMatrix = matrix.clone()..setTranslation(Vector3(correctedTotalTranslation.dx, correctedTotalTranslation.dy, 0));
 
     // Double check that the corrected translation fits.
     final correctedViewport = _transformViewport(correctedMatrix, _viewport);
@@ -498,9 +493,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
       offendingCorrectedDistance.dx == 0.0 ? correctedTotalTranslation.dx : 0.0,
       offendingCorrectedDistance.dy == 0.0 ? correctedTotalTranslation.dy : 0.0,
     );
-    return matrix.clone()..setTranslation(
-      Vector3(unidirectionalCorrectedTotalTranslation.dx, unidirectionalCorrectedTotalTranslation.dy, 0),
-    );
+    return matrix.clone()..setTranslation(Vector3(unidirectionalCorrectedTotalTranslation.dx, unidirectionalCorrectedTotalTranslation.dy, 0));
   }
 
   // Return a new matrix representing the given matrix after applying the given
@@ -662,20 +655,9 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
         }
         final translationVector = _transformer.value.getTranslation();
         final translation = Offset(translationVector.x, translationVector.y);
-        final frictionSimulationX = FrictionSimulation(
-          widget.interactionEndFrictionCoefficient,
-          translation.dx,
-          details.velocity.pixelsPerSecond.dx,
-        );
-        final frictionSimulationY = FrictionSimulation(
-          widget.interactionEndFrictionCoefficient,
-          translation.dy,
-          details.velocity.pixelsPerSecond.dy,
-        );
-        final tFinal = _getFinalTime(
-          details.velocity.pixelsPerSecond.distance,
-          widget.interactionEndFrictionCoefficient,
-        );
+        final frictionSimulationX = FrictionSimulation(widget.interactionEndFrictionCoefficient, translation.dx, details.velocity.pixelsPerSecond.dx);
+        final frictionSimulationY = FrictionSimulation(widget.interactionEndFrictionCoefficient, translation.dy, details.velocity.pixelsPerSecond.dy);
+        final tFinal = _getFinalTime(details.velocity.pixelsPerSecond.distance, widget.interactionEndFrictionCoefficient);
         _animation = Tween<Offset>(
           begin: translation,
           end: Offset(frictionSimulationX.finalX, frictionSimulationY.finalX),
@@ -694,11 +676,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
           scale,
           details.scaleVelocity / 10,
         );
-        final tFinal = _getFinalTime(
-          details.scaleVelocity.abs(),
-          widget.interactionEndFrictionCoefficient,
-          effectivelyMotionless: 0.1,
-        );
+        final tFinal = _getFinalTime(details.scaleVelocity.abs(), widget.interactionEndFrictionCoefficient, effectivelyMotionless: 0.1);
         _scaleAnimation = Tween<double>(
           begin: scale,
           end: frictionSimulation.x(tFinal),
@@ -729,11 +707,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
 
         if (!_gestureIsSupported(_GestureType.pan)) {
           widget.onInteractionUpdate?.call(
-            ScaleUpdateDetails(
-              focalPoint: global - event.scrollDelta,
-              localFocalPoint: local - event.scrollDelta,
-              focalPointDelta: -localDelta,
-            ),
+            ScaleUpdateDetails(focalPoint: global - event.scrollDelta, localFocalPoint: local - event.scrollDelta, focalPointDelta: -localDelta),
           );
           widget.onInteractionEnd?.call(ScaleEndDetails());
           return;
@@ -745,11 +719,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
         _transformer.value = _matrixTranslate(_transformer.value, newFocalPointScene - focalPointScene);
 
         widget.onInteractionUpdate?.call(
-          ScaleUpdateDetails(
-            focalPoint: global - event.scrollDelta,
-            localFocalPoint: local - localDelta,
-            focalPointDelta: -localDelta,
-          ),
+          ScaleUpdateDetails(focalPoint: global - event.scrollDelta, localFocalPoint: local - localDelta, focalPointDelta: -localDelta),
         );
         widget.onInteractionEnd?.call(ScaleEndDetails());
         return;
@@ -767,9 +737,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     widget.onInteractionStart?.call(ScaleStartDetails(focalPoint: global, localFocalPoint: local));
 
     if (!_gestureIsSupported(_GestureType.scale)) {
-      widget.onInteractionUpdate?.call(
-        ScaleUpdateDetails(focalPoint: global, localFocalPoint: local, scale: scaleChange),
-      );
+      widget.onInteractionUpdate?.call(ScaleUpdateDetails(focalPoint: global, localFocalPoint: local, scale: scaleChange));
       widget.onInteractionEnd?.call(ScaleEndDetails());
       return;
     }
@@ -782,9 +750,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     final focalPointSceneScaled = _transformer.toScene(local);
     _transformer.value = _matrixTranslate(_transformer.value, focalPointSceneScaled - focalPointScene);
 
-    widget.onInteractionUpdate?.call(
-      ScaleUpdateDetails(focalPoint: global, localFocalPoint: local, scale: scaleChange),
-    );
+    widget.onInteractionUpdate?.call(ScaleUpdateDetails(focalPoint: global, localFocalPoint: local, scale: scaleChange));
     widget.onInteractionEnd?.call(ScaleEndDetails());
   }
 
@@ -799,10 +765,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     // Translate such that the resulting translation is _animation.value.
     final translationVector = _transformer.value.getTranslation();
     final translation = Offset(translationVector.x, translationVector.y);
-    _transformer.value = _matrixTranslate(
-      _transformer.value,
-      _transformer.toScene(_animation!.value) - _transformer.toScene(translation),
-    );
+    _transformer.value = _matrixTranslate(_transformer.value, _transformer.toScene(_animation!.value) - _transformer.toScene(translation));
   }
 
   void _handleScaleAnimation() {
@@ -842,6 +805,9 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     _scaleController = AnimationController(vsync: this);
 
     _transformer.addListener(_handleTransformation);
+    // Injecte le callback de clamping pour que les consumers externes
+    // (ControlDragCanvasManager) puissent translater avec boundary clamping.
+    _transformer._clampTranslate = _matrixTranslate;
   }
 
   @override
@@ -858,6 +824,8 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     }
     _transformer = newController ?? TransformationControllerVector();
     _transformer.addListener(_handleTransformation);
+    // Réinjecte le callback de clamping sur le nouveau controller.
+    _transformer._clampTranslate = _matrixTranslate;
   }
 
   @override
@@ -865,6 +833,7 @@ class _InteractiveViewerVectorState extends State<InteractiveViewerVector> with 
     _controller.dispose();
     _scaleController.dispose();
     _transformer.removeListener(_handleTransformation);
+    _transformer._clampTranslate = null;
     if (widget.transformationController == null) {
       _transformer.dispose();
     }
@@ -964,6 +933,10 @@ class _InteractiveViewerVectorBuilt extends StatelessWidget {
   }
 }
 
+/// Signature pour la fonction de translation avec clamping des boundaries.
+/// Injectée par [_InteractiveViewerVectorState] via [_matrixTranslate].
+typedef ClampTranslateFn = Matrix4 Function(Matrix4 matrix, Offset translation);
+
 /// A thin wrapper on [ValueNotifier] whose value is a [Matrix4] representing a
 /// transformation.
 ///
@@ -980,6 +953,20 @@ class TransformationControllerVector extends ValueNotifier<Matrix4> {
   /// The [value] defaults to the identity matrix, which corresponds to no
   /// transformation.
   TransformationControllerVector([Matrix4? value]) : super(value ?? Matrix4.identity());
+
+  /// Callback de clamping injecté par [_InteractiveViewerVectorState].
+  /// Quand null, [clampTranslate] fait une translation brute sans clamping.
+  ClampTranslateFn? _clampTranslate;
+
+  /// Applique une translation à la matrice avec clamping des boundaries.
+  ///
+  /// Délègue à [_InteractiveViewerVectorState._matrixTranslate] quand un
+  /// InteractiveViewerVector est attaché, ce qui garantit que la translation
+  /// reste dans les limites du [boundaryMargin] et du viewport.
+  /// Sans InteractiveViewerVector attaché, translation brute (fallback).
+  Matrix4 clampTranslate(Matrix4 matrix, Offset translation) {
+    return _clampTranslate?.call(matrix, translation) ?? (matrix.clone()..translateByDouble(translation.dx, translation.dy, 0, 1));
+  }
 
   /// Return the scene point at the given viewport point.
   ///
