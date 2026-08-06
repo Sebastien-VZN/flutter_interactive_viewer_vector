@@ -131,7 +131,13 @@ class _VectorDemoBody extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("InteractiveViewerVector"),
-        actions: [IconButton(icon: const Icon(Icons.center_focus_strong), tooltip: "Reset transform", onPressed: _resetTransform)],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.center_focus_strong),
+            tooltip: "Reset transform",
+            onPressed: _resetTransform,
+          ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {

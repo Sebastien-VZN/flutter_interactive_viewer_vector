@@ -1,6 +1,9 @@
 # Configuration de l'analyse statique Axomind (Mode Ultra-Strict)
 # Basé sur Very Good Analysis : https://pub.dev/packages/very_good_analysis
 
+formatter:
+  page_width: 120
+
 analyzer:
   language:
     strict-casts: true
