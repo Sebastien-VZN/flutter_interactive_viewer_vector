@@ -38,13 +38,19 @@ Le SDK standard contient un support de gesture de rotation inachevé : un `_rota
 
 ## Plateformes
 
-Natif uniquement — le rendu CanvasKit/HTML sur le web a ses propres caractéristiques de performance et annule le bénéfice :
+Natif uniquement — le rendu CanvasKit/HTML sur le web a ses propres caractéristiques de performance et annule le bénéfice.
 
-- Android
-- iOS
-- macOS
-- Windows
-- Linux
+| Plateforme | Statut de test |
+| --- | --- |
+| Android | Validé manuellement |
+| Linux | Validé manuellement |
+| Windows | Validé manuellement |
+| iOS | Légèrement remanié & recompilé par la CI |
+| macOS | Légèrement remanié & recompilé par la CI |
+
+Je ne teste moi-même que sur **Android, Linux et Windows** — c'est le matos que j'ai sous la main. iOS et macOS sont maintenus fonctionnels au mieux : leurs configs de build ont été légèrement remaniées, ils compilent proprement à chaque run CI, mais je n'ai pas de hardware physique pour faire des smoke tests runtime. Ils passent la gate, je ne peux juste pas certificer personnellement le ressenti des gestures.
+
+Si vous ciblez iOS ou macOS, un test rapide de votre côté suivi d'une [GitHub Issue](https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector/issues) — même une seule ligne « ça marche chez moi » — aiderait à consolider la matrice de support. Contributions bienvenues.
 
 ## Utilisation
 

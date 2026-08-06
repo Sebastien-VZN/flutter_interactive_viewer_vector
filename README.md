@@ -38,13 +38,19 @@ The stock SDK contains unfinished rotation gesture support: a hardcoded `_rotate
 
 ## Platforms
 
-Native only — CanvasKit/HTML rendering on the web has its own performance characteristics and negates the benefit:
+Native only — CanvasKit/HTML rendering on the web has its own performance characteristics and negates the benefit.
 
-- Android
-- iOS
-- macOS
-- Windows
-- Linux
+| Platform | Test status |
+| --- | --- |
+| Android | Manually validated |
+| Linux | Manually validated |
+| Windows | Manually validated |
+| iOS | Lightly reworked & recompiled by the CI |
+| macOS | Lightly reworked & recompiled by the CI |
+
+I only test on **Android, Linux and Windows** myself — that's the gear I have on hand. iOS and macOS are kept functional on a best-effort basis: their build configs were lightly reworked, they compile cleanly on every CI run, but I have no physical hardware to run runtime smoke tests on. They pass the gate, I just can't personally vouch for the gesture feel.
+
+If you target iOS or macOS, a quick hands-on followed by a [GitHub Issue](https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector/issues) — even a one-line "works on my setup" — would help harden the support matrix. Contributions welcome.
 
 ## Usage
 
