@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Added `drag_no_rebuild_test.dart` in `example/test/` — performance regression test that counts widget rebuilds during a simulated node drag. Validates that `ValueListenableBuilder` (current pattern) rebuilds the widget tree on every `PointerMove`, while a `CustomPainter(repaint: notifier)` pattern stays at zero rebuilds. CI-compatible, deterministic.
+- Reformatted source files with `dart format -l 120` for pub.dev style compliance.
+
 ## 0.2.0
 
 - Added `clampTranslate(Matrix4 matrix, Offset translation)` on `TransformationControllerVector`. Delegates to the State's `_matrixTranslate` for full boundary clamping (viewport + boundaryMargin). Falls back to raw `translateByDouble` when no `InteractiveViewerVector` is attached. Consumers can now pan with boundary clamping without duplicating the fork's internal clamping logic.
