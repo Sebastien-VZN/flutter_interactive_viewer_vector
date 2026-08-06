@@ -77,15 +77,39 @@ All constructor variants are supported: `InteractiveViewerVector(...)`, `Interac
 The package widget tests assert that a child widget with a build counter is built **exactly once** across 10 consecutive transformation updates (pan and scale). With the stock widget, each update triggers a build. This test is the proof that the fork works.
 
 ```bash
-flutter test
+flutter test                              # unit + widget tests
+cd example && flutter test integration_test  # integration (device required)
 ```
 
 The `example/` app displays a live "canvas builds" counter in its app bar: it stays flat while you pan/zoom.
 
+### Real-device performance testing
+
+Automated widget tests prove the no-rebuild guarantee (build count stays at zero), but they don't measure real-world frame timing. To measure actual performance:
+
+**Always test on a physical device in profile mode — never on an emulator.**
+
 ```bash
-flutter test                              # unit + widget tests
-cd example && flutter test integration_test  # integration (device required)
+cd example
+flutter run --profile -d <device-id>
 ```
+
+Why this matters:
+
+- **Android emulators** (x64) run without real GPU drivers and with interop overhead on every native call — pointer events fire at unrealistic rates, `Stopwatch` calls dominate the CPU profile (up to 58% of sampled time), and frame budgets are meaningless. You will see phantom jank that doesn't exist on real hardware.
+- **Debug mode** has a different problem: with DevTools attached, the GC pressure from constant `setState`/rebuild cycles in the stock `InteractiveViewer` actually _masks_ the jank by coalescing rebuilds. The old `setState` path looks acceptable in debug because the framework's build scheduling absorbs the churn. Profile mode strips this safety net — AOT compilation, no debug hooks, real allocation patterns — and the true cost of rebuilding the subtree on every frame becomes visible. This is backed by measured performance testing: the same gesture that looks smooth in debug shows dropped frames in profile.
+- **Profile mode** runs with release-like compilation (AOT, no debug overhead) while keeping DevTools attached. This is the only mode that gives you real frame times.
+- **Physical devices** have real touch sampling rates, real GPU fill rates, and real thermal constraints — what you measure is what users experience.
+
+Protocol:
+
+1. Connect a physical device: `flutter devices`
+2. Run in profile mode: `flutter run --profile -d <device-id>`
+3. Open Flutter DevTools → Performance tab
+4. Record 3-5 seconds of continuous pan/zoom
+5. Check: p50/p95 frame times, % of frames > 16.6 ms (60fps budget), FPS during drag
+
+The fork's value is visible here: during pan/zoom, the UI thread stays quiet (no `build()`, no `scheduleBuildFor`), and only the raster thread paints the transformed content.
 
 ## Maintenance & contribution
 
