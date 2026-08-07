@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.4
+
+- Full README overhaul (EN/FR) for pub.dev compliance.
+- Added GitHub-specific READMEs (EN/FR) with screenshots and benchmark images.
+- Improved example app README.
+- Source code formatted to Dart conventions (120-char line width).
+- CI/CD: updated GitHub Actions workflow configuration.
+- Updated `.editorconfig` and `analysis_options.yaml`.
+
 ## 0.2.1
 
 - Added `drag_no_rebuild_test.dart` in `example/test/` — performance regression test that counts widget rebuilds during a simulated node drag. Validates that `ValueListenableBuilder` (current pattern) rebuilds the widget tree on every `PointerMove`, while a `CustomPainter(repaint: notifier)` pattern stays at zero rebuilds. CI-compatible, deterministic.
