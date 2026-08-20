@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.5
+
+- Aligned example app to the official Flutter 3.47.1 Android dependency matrix: AGP `9.3.1` -> `9.1.0`, Kotlin Gradle Plugin `2.3.10` -> `2.4.0`, Gradle wrapper `9.6.1` -> `9.3.1`.
+- Removed the `android.sync.suppressAgpWarnings=DEPRECATED_DSL,UNSUPPORTED_PROJECT_OPTION_USE` workaround from `gradle.properties` — no longer needed on AGP 9.1.0.
+- Verified clean build with `flutter build apk --debug`: no Gradle, AGP, Kotlin, or KGP warnings.
+- Note: this package is pure Dart (no native Android plugin code), so the Android config only affects the example app. Consuming apps are not impacted.
+
 ## 0.2.4
 
 - Full README overhaul (EN/FR) for pub.dev compliance.
