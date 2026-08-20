@@ -63,7 +63,7 @@ flutter test                              # unit + widget tests
 cd example && flutter test integration_test  # integration (device required)
 ```
 
-For the real-device performance testing protocol (DevTools profiling, frame timing), see [README_GH.md](README_GH.md).
+For the real-device performance testing protocol (DevTools profiling, frame timing), see [README_GH.md](https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector/blob/main/README_GH.md).
 
 ## Platforms
 
@@ -83,4 +83,4 @@ Forked from the Flutter SDK (`packages/flutter/lib/src/widgets/interactive_viewe
 
 ---
 
-For detailed technical notes, contribution guidelines, and the performance testing protocol, see [README_GH.md](README_GH.md).
+For detailed technical notes, contribution guidelines, and the performance testing protocol, see [README_GH.md](https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector/blob/main/README_GH.md).

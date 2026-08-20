@@ -27,6 +27,7 @@ jobs:
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: "Unit & Widget Tests"
+        working-directory: packages/interactive_viewer_vector
         run: flutter test
 
   android-build:
@@ -43,17 +44,15 @@ jobs:
         with:
           channel: 'stable'
       - name: "Get Dependencies"
-        run: |
-          flutter pub get
-          cd example && flutter pub get
+        run: flutter pub get
       - name: "Build APK (Release)"
-        working-directory: example
+        working-directory: packages/interactive_viewer_vector/example
         run: flutter build apk --release
       - name: "Upload APK"
         uses: actions/upload-artifact@v7
         with:
           name: android-apk
-          path: example/build/app/outputs/flutter-apk/app-release.apk
+          path: packages/interactive_viewer_vector/example/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 1
 
   linux-build:
@@ -72,14 +71,12 @@ jobs:
       - name: "Enable Linux Desktop"
         run: flutter config --enable-linux-desktop
       - name: "Get Dependencies"
-        run: |
-          flutter pub get
-          cd example && flutter pub get
+        run: flutter pub get
       - name: "Build Linux (Release)"
-        working-directory: example
+        working-directory: packages/interactive_viewer_vector/example
         run: flutter build linux --release
       - name: "Archive Linux Build"
-        working-directory: example/build/linux/x64/release/bundle
+        working-directory: packages/interactive_viewer_vector/example/build/linux/x64/release/bundle
         run: tar -czvf $GITHUB_WORKSPACE/interactive-viewer-vector-linux.tar.gz .
       - name: "Upload Linux"
         uses: actions/upload-artifact@v7
@@ -100,16 +97,14 @@ jobs:
       - name: "Enable Windows Desktop"
         run: flutter config --enable-windows-desktop
       - name: "Get Dependencies"
-        run: |
-          flutter pub get
-          cd example && flutter pub get
+        run: flutter pub get
       - name: "Build Windows (Release)"
-        working-directory: example
+        working-directory: packages/interactive_viewer_vector/example
         run: flutter build windows --release
       - name: "Archive Windows Build"
         shell: pwsh
         run: |
-          Compress-Archive -Path example/build/windows/x64/runner/Release/* -DestinationPath interactive-viewer-vector-windows.zip
+          Compress-Archive -Path packages/interactive_viewer_vector/example/build/windows/x64/runner/Release/* -DestinationPath interactive-viewer-vector-windows.zip
       - name: "Upload Windows"
         uses: actions/upload-artifact@v7
         with:
@@ -127,14 +122,12 @@ jobs:
         with:
           channel: 'stable'
       - name: "Get Dependencies"
-        run: |
-          flutter pub get
-          cd example && flutter pub get
+        run: flutter pub get
       - name: "Build macOS (Release)"
-        working-directory: example
+        working-directory: packages/interactive_viewer_vector/example
         run: flutter build macos --release
       - name: "Archive macOS Build"
-        working-directory: example/build/macos/Build/Products/Release
+        working-directory: packages/interactive_viewer_vector/example/build/macos/Build/Products/Release
         run: zip -r $GITHUB_WORKSPACE/interactive-viewer-vector-macos.zip *.app
       - name: "Upload macOS"
         uses: actions/upload-artifact@v7
@@ -153,14 +146,12 @@ jobs:
         with:
           channel: 'stable'
       - name: "Get Dependencies"
-        run: |
-          flutter pub get
-          cd example && flutter pub get
+        run: flutter pub get
       - name: "Build iOS (Release, no codesign)"
-        working-directory: example
+        working-directory: packages/interactive_viewer_vector/example
         run: flutter build ios --release --no-codesign
       - name: "Archive iOS Build"
-        working-directory: example/build/ios/iphoneos
+        working-directory: packages/interactive_viewer_vector/example/build/ios/iphoneos
         run: zip -r $GITHUB_WORKSPACE/interactive-viewer-vector-ios.zip Runner.app
       - name: "Upload iOS"
         uses: actions/upload-artifact@v7
@@ -210,7 +201,7 @@ jobs:
       - name: "Extract Version"
         id: get_version
         run: |
-          VERSION=$(grep '^version: ' pubspec.yaml | head -1 | sed 's/version: //')
+          VERSION=$(grep '^version: ' packages/interactive_viewer_vector/pubspec.yaml | head -1 | sed 's/version: //')
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "TAG=v$VERSION" >> $GITHUB_OUTPUT
 

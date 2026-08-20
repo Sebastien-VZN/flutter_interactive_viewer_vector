@@ -1,0 +1,9 @@
+name: interactive_viewer_vector_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+workspace:
+  - packages/interactive_viewer_vector
+  - packages/interactive_viewer_vector/example
