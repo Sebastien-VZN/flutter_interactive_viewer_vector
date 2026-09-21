@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.6 
+- Update package flutter
+
 ## 0.2.5
 
 - Aligned example app to the official Flutter 3.47.1 Android dependency matrix: AGP `9.3.1` -> `9.1.0`, Kotlin Gradle Plugin `2.3.10` -> `2.4.0`, Gradle wrapper `9.6.1` -> `9.3.1`.

@@ -3,7 +3,7 @@ resolution: workspace
 description: >-
   Fork of InteractiveViewer with direct RenderTransform updates
   (markNeedsPaint) for zero widget rebuilds during pan/zoom interactions.
-version: 0.2.5
+version: 0.2.6
 repository: https://github.com/Sebastien-VZN/flutter_interactive_viewer_vector/tree/main/packages/interactive_viewer_vector
 
 environment:
